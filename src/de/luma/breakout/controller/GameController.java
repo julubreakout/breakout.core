@@ -397,7 +397,7 @@ public class GameController extends ObservableGame implements IGameController {
 	 */
 	@Override
 	public String saveLevel() {		
-		String filepath = LEVEL_PATH + "userLevel" + System.nanoTime() + ".lvl";
+		String filepath = appPath + LEVEL_PATH + "userLevel" + System.nanoTime() + ".lvl";
 		if (saveLevel(new File(filepath))) {
 			return filepath;
 		} else {

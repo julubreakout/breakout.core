@@ -21,13 +21,15 @@ public class TestGameController extends TestCase {
 
 	private UITextView view;
 	private GameController controller;
+	private String workingDir;
 
 	@Before
 	public void setUp() throws Exception {
 		System.out.println("setUp()\n");
 
+		workingDir = System.getProperty("user.dir") + "/test/";
 		// create controller
-		controller = new GameController(System.getProperty("user.dir"));
+		controller = new GameController(workingDir);
 		controller.clearGrid();
 		controller.setGridSize(400, 600);
 
@@ -277,17 +279,17 @@ public class TestGameController extends TestCase {
 
 	@Test
 	public void testLoadLevel() {
-		assertTrue(controller.loadLevel(new File("test/testlevels/sampleLevel1.lvl")));
+		assertTrue(controller.loadLevel(new File(workingDir + "levels/testlevels/sampleLevel1.lvl")));
 
 		assertFalse(controller.getBricks().isEmpty());
 
 
 
 		// test invalid game object						
-		assertFalse(controller.loadLevel(new File("test/testlevels/sampleLevelBug.lvl")));	
+		assertFalse(controller.loadLevel(new File(workingDir + "levels/testlevels/sampleLevelBug.lvl")));	
 
 		// test invalid file path
-		assertFalse(controller.loadLevel(new File("test/testlevels/notValidPath.lvl")));		
+		assertFalse(controller.loadLevel(new File(workingDir + "levels/testlevels/notValidPath.lvl")));		
 	}
 
 	@Test
@@ -296,14 +298,14 @@ public class TestGameController extends TestCase {
 			int oldBrickCount = controller.getBricks().size();
 			int oldBallCount = controller.getBalls().size();
 
-			assertTrue(controller.saveLevel(new File ("test/testlevels/sampleLevel1_out.lvl")));
+			assertTrue(controller.saveLevel(new File (workingDir + "levels/testlevels/sampleLevel1_out.lvl")));
 
 			controller.loadLevel(new File("test/sampleLevel1_out.lvl"));
 			assertEquals(controller.getBalls().size(), oldBallCount);
 			assertEquals(controller.getBricks().size(), oldBrickCount);	
 
 			// test save level FileNotFound
-			assertFalse(controller.saveLevel(new File ("NonExistingFolder/testLevelBug.lvl")));
+			assertFalse(controller.saveLevel(new File (workingDir + "levels/NonExistingFolder/testLevelBug.lvl")));
 
 			// automatic save
 			String filepath = controller.saveLevel();
