@@ -10,7 +10,7 @@
 		<testSourceDirectory>test</testSourceDirectory>
 		<resources>
 			<resource>
-				<directory>test/testlevels</directory>
+				<directory>test/levels</directory>
 			</resource>
 		</resources>
 		<plugins>
