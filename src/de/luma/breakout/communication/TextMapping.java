@@ -43,27 +43,27 @@ public final class TextMapping {
 	public static String getTextForIndex(int indexOfTxt) {
 		switch (indexOfTxt) {
 		case TXT_YOU_LOSE:
-			return "Sie haben verloren!";
+			return "Game over!";
 		case TXT_YOU_WIN:
-			return "Sie haben gewonnen!";
+			return "You won!";
 		case TXT_MAIN_MENU:
-			return "Hauptmenü";
+			return "Main Menu";
 		case TXT_NEW_GAME:
-			return "Neues Spiel";
+			return "New Game";
 		case TXT_CONTINUE:
-			return "Weiterspielen";
+			return "Continue";
 		case TXT_NEXT_LEVEL:
 			return "Next Level";
 		case TXT_LEVEL_CHOOSE:
-			return "Level wählen";
+			return "Choose Level";
 		case TXT_LEVEL_EDITOR:
 			return "Level Editor";
 		case TXT_END:
-			return "Spiel beenden";
+			return "End Game";
 		case TXT_GAME_PAUSED:
-			return "Spiel angehalten";
+			return "Game Halted";
 		case TXT_BACK_TO_MAIN_MENU:
-			return "Zurück zum Hauptmenü";
+			return "Return to Main Menu";
 		default:
 			return "?";			
 		}
