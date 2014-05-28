@@ -154,7 +154,10 @@ public interface IGameController extends IObservableGame {
 	void clearGrid();
 	
 	
-	
+	/**
+	 *  Returns the game score of the last game 
+	 */
+	int getScore();
 	
 	
 }

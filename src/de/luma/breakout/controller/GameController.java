@@ -60,13 +60,14 @@ public class GameController extends ObservableGame implements IGameController {
 	private GAME_STATE state;
 	private boolean isInCreativeMode;
 	private int levelIndex;	
-	
+	private int frameCount;
+
 	private static final String LEVEL_PATH = "levels/";
 	private static final int FRAME_DELAY = 10;
 	private static final int DEFAULT_GRID_WIDTH = 500;
 	private static final int DEFAULT_GRID_HEIGHT = 500;
 	private static final int DEFAULT_SLIDER_STEP = 5;
-	
+
 	/**
 	 * Default Constructor
 	 */
@@ -78,7 +79,7 @@ public class GameController extends ObservableGame implements IGameController {
 
 	/* #######################################  GAME INFRASTRUCTURE #######################################   */
 	/* ###############################    Basics to make the game a game     ##############################  */
-	
+
 	/**
 	 *  Initialize the game. Has to be called only one time when the game starts running 
 	 */
@@ -86,7 +87,7 @@ public class GameController extends ObservableGame implements IGameController {
 	public void initialize() {		
 		showMainMenu();
 	}
-	
+
 	/**
 	 * Prepares the next frame of the game:
 	 * - Move balls and do collision tests
@@ -97,9 +98,9 @@ public class GameController extends ObservableGame implements IGameController {
 	public void updateGame() {
 		// move game objects only when not in creative mode
 		if (!this.isInCreativeMode) {
-			
+			frameCount++;
 			moveBalls();				
-			
+
 			// Check if no ball on game grid
 			if (getGrid().getBalls().isEmpty()) {
 				gameOver();
@@ -110,18 +111,18 @@ public class GameController extends ObservableGame implements IGameController {
 				winGame();
 			}
 		}
-			
+
 		// notify bricks of new frame (e.g. for moving bricks)
 		for (IBrick brick : getGrid().getBricks()) {
 			brick.onNextFrame();
 		}
-		
+
 		notifyNextGameFrame();
 		notifyRepaintPlayGrid();
-		
-		
+
+
 	}
-	
+
 	/**
 	 * Moves all balls, regarding collisions with bricks, the grid borders and the slider.
 	 * Balls and bricks get removed by this method when the grid or a brick signals to do so.
@@ -183,7 +184,7 @@ public class GameController extends ObservableGame implements IGameController {
 			timer.cancel();
 		}
 	}
-	
+
 	/**
 	 * Start or resume the game.
 	 */
@@ -194,7 +195,7 @@ public class GameController extends ObservableGame implements IGameController {
 		setState(GAME_STATE.RUNNING);
 
 	}
-	
+
 
 	/**
 	 * Pause the game and display the pause menu.
@@ -202,7 +203,7 @@ public class GameController extends ObservableGame implements IGameController {
 	private void pause() {
 		cancelTimer();
 		setState(GAME_STATE.PAUSED);
-	
+
 		notifyGameMenu(new MENU_ITEM[] {MENU_ITEM.MNU_NEW_GAME, MENU_ITEM.MNU_CONTINUE, MENU_ITEM.MNU_BACK_MAIN_MENU, MENU_ITEM.MNU_END},  
 				TextMapping.getTextForIndex(TextMapping.TXT_GAME_PAUSED));
 	}
@@ -212,10 +213,11 @@ public class GameController extends ObservableGame implements IGameController {
 	 */
 	private void gameOver() {
 		cancelTimer();
-
+		frameCount = 0;
 		setState(GAME_STATE.MENU_GAMEOVER);
 		notifyGameMenu(new MENU_ITEM[]{MENU_ITEM.MNU_NEW_GAME, MENU_ITEM.MNU_BACK_MAIN_MENU, MENU_ITEM.MNU_END},
 				TextMapping.getTextForIndex(TextMapping.TXT_YOU_LOSE));		
+
 	}
 
 	/**
@@ -223,7 +225,7 @@ public class GameController extends ObservableGame implements IGameController {
 	 */
 	private void terminate() {
 		cancelTimer();
-
+		frameCount = 0; 
 		setState(GAME_STATE.KILLED);		
 	}
 
@@ -259,7 +261,7 @@ public class GameController extends ObservableGame implements IGameController {
 			}
 		}
 	}
-	
+
 	/**
 	 * Control slider movements since the slider has no information about the grid.
 	 * @param delta Positive or negative value to move slider.
@@ -274,20 +276,20 @@ public class GameController extends ObservableGame implements IGameController {
 			getGrid().getSlider().setX(newx);
 		}
 	}
-	
+
 	/**
 	 * Display the main game menu.
 	 */
 	private void showMainMenu() {
 		setState(GAME_STATE.MENU_MAIN);
 		// with editor
-//		notifyGameMenu(new MENU_ITEM[]{MENU_ITEM.MNU_NEW_GAME, MENU_ITEM.MNU_LEVEL_CHOOSE, MENU_ITEM.MNU_LEVEL_EDITOR, MENU_ITEM.MNU_END},
-//				TextMapping.getTextForIndex(TextMapping.TXT_MAIN_MENU));
-		
+		//		notifyGameMenu(new MENU_ITEM[]{MENU_ITEM.MNU_NEW_GAME, MENU_ITEM.MNU_LEVEL_CHOOSE, MENU_ITEM.MNU_LEVEL_EDITOR, MENU_ITEM.MNU_END},
+		//				TextMapping.getTextForIndex(TextMapping.TXT_MAIN_MENU));
+
 		notifyGameMenu(new MENU_ITEM[]{MENU_ITEM.MNU_NEW_GAME, MENU_ITEM.MNU_LEVEL_CHOOSE, MENU_ITEM.MNU_END},
 				TextMapping.getTextForIndex(TextMapping.TXT_MAIN_MENU));
 	}
-	
+
 	/**
 	 * Process the given menu input. 
 	 * It is not checked whether the given menu item 
@@ -331,14 +333,14 @@ public class GameController extends ObservableGame implements IGameController {
 			this.start();			
 			break;
 		case MNU_NEXT_LEVEL:
-			
+
 			this.setCreativeMode(false);	
 			// last level
 			levelIndex++;
 			if (levelIndex == getLevelList().size()) {
 				break;
 			}
-			
+
 			loadLevel(new File(getLevelList().get(levelIndex)));
 			this.start();
 			break;
@@ -346,7 +348,7 @@ public class GameController extends ObservableGame implements IGameController {
 			break;
 		}		
 	}
-	
+
 	/**
 	 * this method stores actual menu Items and Title
 	 * 
@@ -354,10 +356,10 @@ public class GameController extends ObservableGame implements IGameController {
 	@Override
 	public void notifyGameMenu(MENU_ITEM[] menuItems, String title) {
 		this.menu = new GameMenu(menuItems, title);
-		
+
 		super.notifyGameMenu(menuItems, title);
 	}
-	
+
 	/**
 	 * (non-Javadoc)
 	 * @see de.luma.breakout.controller.IGameController#getState()
@@ -366,8 +368,8 @@ public class GameController extends ObservableGame implements IGameController {
 	public GAME_STATE getState() {
 		return state;
 	}
-	
-	
+
+
 	private void setState(GAME_STATE state) {
 		this.state = state;
 		notifyGameStateChanged(state);
@@ -381,7 +383,7 @@ public class GameController extends ObservableGame implements IGameController {
 	public boolean getCreativeMode() {
 		return isInCreativeMode;
 	}
-	
+
 	/**
 	 * Enable creative mode to display the running game without
 	 * moving the balls.
@@ -389,9 +391,9 @@ public class GameController extends ObservableGame implements IGameController {
 	private void setCreativeMode(boolean enableCreativeMode) {
 		this.isInCreativeMode = enableCreativeMode;
 	}
-	
+
 	/* #######################################  LEVEL HANDLING #######################################   */
-	
+
 	/** (non-Javadoc)
 	 * @see de.luma.breakout.controller.IGameController#saveLevel()
 	 */
@@ -404,7 +406,7 @@ public class GameController extends ObservableGame implements IGameController {
 			return null;
 		}
 	}	
-	
+
 	/** (non-Javadoc)
 	 * @see de.luma.breakout.controller.IGameController#saveLevel(java.io.File)
 	 */
@@ -415,33 +417,33 @@ public class GameController extends ObservableGame implements IGameController {
 			Locale.setDefault(new Locale("en", "US"));			
 			OutputStreamWriter w;			
 			w = new OutputStreamWriter(new FileOutputStream(f));
-			
+
 			out = new PrintWriter(new BufferedWriter(w));
-			
+
 			// save Grid Properties
 			out.println(getGrid().encode());
-				
+
 			// save bricks
 			for (IBrick brick : getGrid().getBricks()) {
 				out.print(brick.getClass().getName());
 				out.print(':');
 				out.println(brick.encode());
 			}
-			
+
 			// save balls
 			for (IBall b : getGrid().getBalls()) {
 				out.print(b.getClass().getName());
 				out.print(':');
 				out.println(b.encode());
 			}
-			
+
 			// save slider - last object, no newline at the end!
 			out.print(getGrid().getSlider().getClass().getName());
 			out.print(':');
 			out.print(getGrid().getSlider().encode());
-			
+
 			return true;
-			
+
 		} catch (FileNotFoundException e) {					
 			return false;
 		} finally {
@@ -450,7 +452,7 @@ public class GameController extends ObservableGame implements IGameController {
 			}
 		}		
 	}
-	
+
 
 	/** (non-Javadoc)
 	 * @see de.luma.breakout.controller.IGameController#loadLevel(java.io.File)
@@ -461,22 +463,22 @@ public class GameController extends ObservableGame implements IGameController {
 		try {
 			Locale.setDefault(new Locale("en", "US"));
 			s = new Scanner(f);
-			
+
 			clearGrid();
-					
+
 			// decode Grid Properties
 			String line = s.nextLine();			
 			this.getGrid().decode(line);
-			
+
 			while (s.hasNextLine()) {
 				line = s.nextLine();
-				
+
 				String className = line.substring(0, line.indexOf(':'));				
 				Class<?> classObj = this.getClass().getClassLoader().loadClass(className);
-				
+
 				IDecodable obj = (IDecodable) classObj.newInstance();
 				obj.decode(line.substring(className.length()+1));			
-								
+
 				if (obj instanceof IBall) {
 					getGrid().getBalls().add((IBall) obj);
 				} else if (obj instanceof Slider) {
@@ -485,11 +487,11 @@ public class GameController extends ObservableGame implements IGameController {
 					getGrid().getBricks().add((IBrick) obj);
 				}
 			}
-			
+
 			// for full coverage
 			setGridSize(getGrid().getWidth(), getGrid().getHeight());
 			notifyOnResize();			
-			
+
 		} catch(Exception e) {			
 			return false;
 		} finally {
@@ -500,8 +502,8 @@ public class GameController extends ObservableGame implements IGameController {
 		} 
 		return true;
 	}
-	
-	
+
+
 	/**
 	 * Get a list of file path of available levels.
 	 *  add a offset if your not working localy
@@ -512,7 +514,7 @@ public class GameController extends ObservableGame implements IGameController {
 		File f = new File(appPath + LEVEL_PATH);
 		System.out.println("load levels from: " + f.getAbsolutePath());
 		List<String> retVal = new ArrayList<String>();
-		
+
 		for (String s : f.list()) {
 			System.out.println("found level:" + s);
 			if (s.endsWith(".lvl")) {
@@ -521,7 +523,7 @@ public class GameController extends ObservableGame implements IGameController {
 		}
 		return retVal;
 	}
-	
+
 	/* #######################################  GRID ACCESS HANDLING #######################################   */
 	/* ############################   the same procedure as every year...    ###########################  */
 
@@ -543,16 +545,16 @@ public class GameController extends ObservableGame implements IGameController {
 		// set grid size
 		getGrid().setWidth(width);
 		getGrid().setHeight(height);
-		
+
 		// fit slider position to new size
 		if (getSlider() != null) {
 			getSlider().setY(height - getSlider().getHeight() -DEFAULT_SLIDER_STEP);
 			getSlider().setX(0);
 		}
-		
+
 		notifyOnResize();
 	}
-	
+
 	/**
 	 * (non-Javadoc)
 	 * @see de.luma.breakout.controller.IGameController#getGridSize()
@@ -567,7 +569,7 @@ public class GameController extends ObservableGame implements IGameController {
 	public List<IBrick> getBrickClasses() {
 		return getGrid().getBrickClasses();
 	}
-	
+
 	/**
 	 * (non-Javadoc)
 	 * @see de.luma.breakout.controller.IGameController#getGameMenu()
@@ -575,7 +577,7 @@ public class GameController extends ObservableGame implements IGameController {
 	public GameMenu getGameMenu() {
 		return menu;
 	}
-	
+
 	/** (non-Javadoc)
 	 * @see de.luma.breakout.controller.IGameController#getBalls()
 	 */
@@ -617,15 +619,27 @@ public class GameController extends ObservableGame implements IGameController {
 	public void setSlider(IBrick slider) {
 		getGrid().setSlider(slider);
 	}
-	
-	
+
+
 	/** (non-Javadoc)
 	 * @see de.luma.breakout.controller.IGameController#clearGrid()
 	 */
 	@Override
 	public void clearGrid() {
 		getGrid().clearGrid();	
-		
+
+	}
+
+	/** (non-Javadoc)
+	 * @see de.luma.breakout.controller.IGameController#getScore()
+	 */
+	@Override
+	public int getScore() {
+		final int maxScore = 100000;
+		if (frameCount == 0 || frameCount >= maxScore) {
+			return 0;
+		}
+		return maxScore - frameCount;
 	}
 
 }
