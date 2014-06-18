@@ -15,10 +15,20 @@ import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import akka.actor.ActorRef;
+import akka.actor.UntypedActor;
 import de.luma.breakout.communication.GAME_STATE;
+import de.luma.breakout.communication.IGameObserver;
 import de.luma.breakout.communication.MENU_ITEM;
 import de.luma.breakout.communication.ObservableGame;
 import de.luma.breakout.communication.TextMapping;
+import de.luma.breakout.communication.messages.GameInputMessage;
+import de.luma.breakout.communication.messages.InitMessage;
+import de.luma.breakout.communication.messages.LoadLevelMessage;
+import de.luma.breakout.communication.messages.MenuInputMessage;
+import de.luma.breakout.communication.messages.ShowMenuMessage;
+import de.luma.breakout.communication.messages.UpdateGameFrameMessage;
+import de.luma.breakout.communication.messages.UpdateGameStateMessage;
 import de.luma.breakout.data.PlayGrid;
 import de.luma.breakout.data.menu.GameMenu;
 import de.luma.breakout.data.objects.IBall;
@@ -28,11 +38,80 @@ import de.luma.breakout.data.objects.impl.Slider;
 
 /**
  * Game Controller 
- * @author mabausch
  *
  */
 public class GameController extends ObservableGame implements IGameController {	
 
+
+	public static class GameControllerActor extends UntypedActor implements IGameObserver {
+		
+		private GameController controller;
+		private ActorRef parent;
+
+		public GameControllerActor(String appPath) {
+			controller = new GameController(appPath);
+			controller.addObserver(this);
+		}
+		
+		@Override
+		public void onReceive(Object msg) throws Exception {
+			System.out.println("controller received: " + msg.toString());
+			
+			if (msg instanceof InitMessage) {
+				parent = getSender();
+				controller.initialize();
+				
+			} else if (msg instanceof GameInputMessage) {
+				GameInputMessage inputMsg = (GameInputMessage)msg;
+				controller.processGameInput(inputMsg.getInput());
+				
+			} else if (msg instanceof MenuInputMessage) {
+				MenuInputMessage menuMsg = (MenuInputMessage)msg;
+				controller.processMenuInput(menuMsg.getIndexOfMenuItem());
+				
+			} else if (msg instanceof LoadLevelMessage) {
+				LoadLevelMessage levelMsg = (LoadLevelMessage)msg;
+				controller.loadLevel(new File(levelMsg.getFilePath()));
+				
+			}
+			
+		}
+
+		@Override
+		public void updateGameState(GAME_STATE state) {
+			if (parent == null)
+				return;
+			
+			parent.tell(new UpdateGameStateMessage(state, controller.getScore(), controller.getLevelList()), getSelf());
+		}
+
+		@Override
+		public void updateGameMenu(MENU_ITEM[] menuItems, String title) {
+			if (parent == null)
+				return;
+			
+			parent.tell(new ShowMenuMessage(menuItems, title), getSelf());
+		}
+
+		@Override
+		public void updateGameFrame() {
+			if (parent == null)
+				return;
+			
+			parent.tell(
+					new UpdateGameFrameMessage(
+							controller.getState(), controller.getLevelList(), controller.getScore(), 
+							controller.getGridSize(), controller.getBalls(), controller.getBricks(), controller.getSlider()
+					), getSelf());
+		}
+		
+		@Override
+		public void updateRepaintPlayGrid() { }  // not needed
+
+		@Override
+		public void updateOnResize() { }  // not needed
+	}
+	
 	/**
 	 * This task gets scheduled by start() to make the
 	 * game run with a constant FPS.
