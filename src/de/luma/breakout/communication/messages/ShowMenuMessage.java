@@ -2,7 +2,7 @@ package de.luma.breakout.communication.messages;
 
 import de.luma.breakout.communication.MENU_ITEM;
 
-public class ShowMenuMessage {
+public class ShowMenuMessage implements IActorMessage {
 	private MENU_ITEM[] menuItems;
 	
 	public ShowMenuMessage(MENU_ITEM[] menuItems, String title) {

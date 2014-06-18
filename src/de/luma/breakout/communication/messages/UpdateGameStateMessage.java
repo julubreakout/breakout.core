@@ -4,7 +4,7 @@ import java.util.List;
 
 import de.luma.breakout.communication.GAME_STATE;
 
-public class UpdateGameStateMessage {
+public class UpdateGameStateMessage implements IActorMessage {
 
 	private GAME_STATE state;
 	private int score;

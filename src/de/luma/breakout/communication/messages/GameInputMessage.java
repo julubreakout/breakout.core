@@ -2,7 +2,7 @@ package de.luma.breakout.communication.messages;
 
 import de.luma.breakout.controller.IGameController.PLAYER_INPUT;
 
-public class GameInputMessage {
+public class GameInputMessage implements IActorMessage {
 
 	private PLAYER_INPUT input;
 

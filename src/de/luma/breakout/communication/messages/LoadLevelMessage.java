@@ -1,6 +1,6 @@
 package de.luma.breakout.communication.messages;
 
-public class LoadLevelMessage {
+public class LoadLevelMessage implements IActorMessage {
 	
 	private String filePath;
 

@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
@@ -22,8 +23,10 @@ import de.luma.breakout.communication.IGameObserver;
 import de.luma.breakout.communication.MENU_ITEM;
 import de.luma.breakout.communication.ObservableGame;
 import de.luma.breakout.communication.TextMapping;
+import de.luma.breakout.communication.messages.DetachObserverMessage;
 import de.luma.breakout.communication.messages.GameInputMessage;
-import de.luma.breakout.communication.messages.InitMessage;
+import de.luma.breakout.communication.messages.IActorMessage;
+import de.luma.breakout.communication.messages.AddObserverMessage;
 import de.luma.breakout.communication.messages.LoadLevelMessage;
 import de.luma.breakout.communication.messages.MenuInputMessage;
 import de.luma.breakout.communication.messages.ShowMenuMessage;
@@ -46,9 +49,11 @@ public class GameController extends ObservableGame implements IGameController {
 	public static class GameControllerActor extends UntypedActor implements IGameObserver {
 		
 		private GameController controller;
-		private ActorRef parent;
+		private List<ActorRef> observers;
 
 		public GameControllerActor(String appPath) {
+			
+			observers = new LinkedList<ActorRef>();
 			controller = new GameController(appPath);
 			controller.addObserver(this);
 		}
@@ -56,10 +61,22 @@ public class GameController extends ObservableGame implements IGameController {
 		@Override
 		public void onReceive(Object msg) throws Exception {
 			System.out.println("controller received: " + msg.toString());
+			if (getSender().equals(getSelf()))
+				return;
 			
-			if (msg instanceof InitMessage) {
-				parent = getSender();
+			if (msg instanceof AddObserverMessage) {
+				synchronized (observers) {
+					observers.add(getSender());
+				}
+				
+				System.out.println("GameController added observer " + getSender().toString());
 				controller.initialize();
+				
+			} else if (msg instanceof DetachObserverMessage) {
+				synchronized (observers) {
+					observers.remove(getSender());
+				}
+				System.out.println("GameController removed observer " + getSender().toString());
 				
 			} else if (msg instanceof GameInputMessage) {
 				GameInputMessage inputMsg = (GameInputMessage)msg;
@@ -76,33 +93,30 @@ public class GameController extends ObservableGame implements IGameController {
 			}
 			
 		}
+		
+		private void notifyObservers(IActorMessage message) {
+			synchronized (observers) {
+				for (ActorRef parentActor : observers) {
+					parentActor.tell(message, getSelf());
+				}
+			}
+		}
 
 		@Override
 		public void updateGameState(GAME_STATE state) {
-			if (parent == null)
-				return;
-			
-			parent.tell(new UpdateGameStateMessage(state, controller.getScore(), controller.getLevelList()), getSelf());
+			notifyObservers(new UpdateGameStateMessage(state, controller.getScore(), controller.getLevelList()));
 		}
 
 		@Override
 		public void updateGameMenu(MENU_ITEM[] menuItems, String title) {
-			if (parent == null)
-				return;
-			
-			parent.tell(new ShowMenuMessage(menuItems, title), getSelf());
+			notifyObservers(new ShowMenuMessage(menuItems, title));
 		}
 
 		@Override
 		public void updateGameFrame() {
-			if (parent == null)
-				return;
-			
-			parent.tell(
-					new UpdateGameFrameMessage(
+			notifyObservers(new UpdateGameFrameMessage(
 							controller.getState(), controller.getLevelList(), controller.getScore(), 
-							controller.getGridSize(), controller.getBalls(), controller.getBricks(), controller.getSlider()
-					), getSelf());
+							controller.getGridSize(), controller.getBalls(), controller.getBricks(), controller.getSlider()));
 		}
 		
 		@Override
@@ -135,11 +149,12 @@ public class GameController extends ObservableGame implements IGameController {
 	private PlayGrid grid;	
 	private Timer timer;
 	private GameTimerTask task;
-	private GameMenu menu;
+	private GameMenu lastShownMenu;
 	private GAME_STATE state;
 	private boolean isInCreativeMode;
 	private int levelIndex;	
 	private int frameCount;
+	private boolean isInitialized;
 
 	private static final String LEVEL_PATH = "levels/";
 	private static final int FRAME_DELAY = 10;
@@ -163,8 +178,16 @@ public class GameController extends ObservableGame implements IGameController {
 	 *  Initialize the game. Has to be called only one time when the game starts running 
 	 */
 	@Override
-	public void initialize() {		
-		showMainMenu();
+	public void initialize() {
+		if (!isInitialized) {   // first observer connected
+			showMainMenu();
+			isInitialized = true;
+			
+		} else {   // only repeat menu message for next clients
+			if (getState() != GAME_STATE.RUNNING && lastShownMenu != null) {
+				notifyGameMenu(this.lastShownMenu.getMenuItems(), this.lastShownMenu.getTitle());
+			}
+		}
 	}
 
 	/**
@@ -434,7 +457,7 @@ public class GameController extends ObservableGame implements IGameController {
 	 */
 	@Override
 	public void notifyGameMenu(MENU_ITEM[] menuItems, String title) {
-		this.menu = new GameMenu(menuItems, title);
+		this.lastShownMenu = new GameMenu(menuItems, title);
 
 		super.notifyGameMenu(menuItems, title);
 	}
@@ -583,6 +606,8 @@ public class GameController extends ObservableGame implements IGameController {
 	}
 
 
+	private List<String> cachedLevelList;
+	
 	/**
 	 * Get a list of file path of available levels.
 	 *  add a offset if your not working localy
@@ -590,6 +615,9 @@ public class GameController extends ObservableGame implements IGameController {
 	 * @return
 	 */
 	public List<String> getLevelList() {
+		if (cachedLevelList != null) 
+			return cachedLevelList;
+		
 		File f = new File(appPath + LEVEL_PATH);
 		System.out.println("load levels from: " + f.getAbsolutePath());
 		List<String> retVal = new ArrayList<String>();
@@ -600,6 +628,7 @@ public class GameController extends ObservableGame implements IGameController {
 				retVal.add(f.getPath() + "/" + s);
 			}
 		}
+		cachedLevelList = retVal;
 		return retVal;
 	}
 
@@ -654,7 +683,7 @@ public class GameController extends ObservableGame implements IGameController {
 	 * @see de.luma.breakout.controller.IGameController#getGameMenu()
 	 */
 	public GameMenu getGameMenu() {
-		return menu;
+		return lastShownMenu;
 	}
 
 	/** (non-Javadoc)

@@ -7,7 +7,7 @@ import de.luma.breakout.communication.GAME_STATE;
 import de.luma.breakout.data.objects.IBall;
 import de.luma.breakout.data.objects.IBrick;
 
-public class UpdateGameFrameMessage {
+public class UpdateGameFrameMessage implements IActorMessage {
 	
 	private GAME_STATE gameState;
 	private List<String> levelList;

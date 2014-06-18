@@ -1,5 +1,5 @@
 package de.luma.breakout.communication.messages;
 
-public class InitMessage {
+public interface IActorMessage {
 
 }

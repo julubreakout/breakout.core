@@ -2,7 +2,7 @@ package de.luma.breakout.communication.messages;
 
 import de.luma.breakout.communication.MENU_ITEM;
 
-public class MenuInputMessage {
+public class MenuInputMessage implements IActorMessage {
 	
 	private MENU_ITEM indexOfMenuItem;
 
