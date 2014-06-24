@@ -62,24 +62,22 @@ public class GameController extends ObservableGame implements IGameController {
 		
 		@Override
 		public void onReceive(Object msg) throws Exception {
-			System.out.println("controller received: " + msg.toString());
-			if (getSender().equals(getSelf()))
+			if (getSender().equals(getSelf())) {
 				return;
+			}
 			
 			if (msg instanceof AddObserverMessage) {
 				synchronized (observers) {
 					observers.add(getSender());
 				}
 				
-				System.out.println("GameController added observer " + getSender().toString());
 				controller.initialize();
 				
 			} else if (msg instanceof DetachObserverMessage) {
 				synchronized (observers) {
 					observers.remove(getSender());
 				}
-				System.out.println("GameController removed observer " + getSender().toString());
-				
+
 			} else if (msg instanceof GameInputMessage) {
 				GameInputMessage inputMsg = (GameInputMessage)msg;
 				controller.processGameInput(inputMsg.getInput());
@@ -386,9 +384,6 @@ public class GameController extends ObservableGame implements IGameController {
 	 */
 	private void showMainMenu() {
 		setState(GAME_STATE.MENU_MAIN);
-		// with editor
-		//		notifyGameMenu(new MENU_ITEM[]{MENU_ITEM.MNU_NEW_GAME, MENU_ITEM.MNU_LEVEL_CHOOSE, MENU_ITEM.MNU_LEVEL_EDITOR, MENU_ITEM.MNU_END},
-		//				TextMapping.getTextForIndex(TextMapping.TXT_MAIN_MENU));
 
 		notifyGameMenu(new MENU_ITEM[]{MENU_ITEM.MNU_NEW_GAME, MENU_ITEM.MNU_LEVEL_CHOOSE, MENU_ITEM.MNU_END},
 				TextMapping.getTextForIndex(TextMapping.TXT_MAIN_MENU));
@@ -403,10 +398,12 @@ public class GameController extends ObservableGame implements IGameController {
 	 */
 	@Override
 	public void processMenuInput(MENU_ITEM indexOfMenuItem) {
-		if (indexOfMenuItem == null) {
-			indexOfMenuItem = MENU_ITEM.MNU_BACK_MAIN_MENU;
+		MENU_ITEM menuItem = indexOfMenuItem;
+		if (menuItem == null) {
+			menuItem = MENU_ITEM.MNU_BACK_MAIN_MENU;
 		}
-		switch (indexOfMenuItem) {
+		
+		switch (menuItem) {
 		case MNU_NEW_GAME:
 			this.setCreativeMode(false);	
 			levelIndex = 0;
@@ -414,7 +411,6 @@ public class GameController extends ObservableGame implements IGameController {
 			this.start();
 			break;
 		case MNU_END:
-			// TODO save level and gameprocess
 			terminate();	
 			break;
 		case MNU_CONTINUE:			
@@ -617,15 +613,15 @@ public class GameController extends ObservableGame implements IGameController {
 	 * @return
 	 */
 	public List<String> getLevelList() {
-		if (cachedLevelList != null) 
+		if (cachedLevelList != null) {
 			return cachedLevelList;
+		}
 		
 		File f = new File(appPath + LEVEL_PATH);
-		System.out.println("load levels from: " + f.getAbsolutePath());
 		List<String> retVal = new ArrayList<String>();
 
 		for (String s : f.list()) {
-			System.out.println("found level:" + s);
+			//System.out.println("found level:" + s);
 			if (s.endsWith(".lvl")) {
 				retVal.add(f.getPath() + "/" + s);
 			}
