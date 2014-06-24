@@ -1,15 +1,16 @@
 package de.luma.breakout.data.menu;
 
+import java.util.Arrays;
 import de.luma.breakout.communication.MENU_ITEM;
 
 public class GameMenu {
 
-	private MENU_ITEM[] menuItems;
-	private String title;
+	private final MENU_ITEM[] menuItems;
+	private final String title;
 
-	public GameMenu(MENU_ITEM[] menuItems, String title) {
+	public GameMenu(final MENU_ITEM[] menuItems, final String title) {
 		super();
-		this.menuItems = menuItems;
+		this.menuItems = Arrays.copyOf(menuItems, menuItems.length);
 		this.title = title;
 	}	
 	

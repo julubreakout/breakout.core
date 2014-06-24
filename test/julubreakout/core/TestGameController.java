@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import de.luma.breakout.communication.GAME_STATE;
 import de.luma.breakout.communication.MENU_ITEM;
+import de.luma.breakout.communication.PLAYER_INPUT;
 import de.luma.breakout.controller.GameController;
-import de.luma.breakout.controller.IGameController.PLAYER_INPUT;
 import de.luma.breakout.data.objects.IBall;
 import de.luma.breakout.data.objects.impl.Ball;
 import de.luma.breakout.data.objects.impl.SimpleBrick;
@@ -245,27 +245,27 @@ public class TestGameController extends TestCase {
 
 		// test slider movements
 		controller.getSlider().setX(50);
-		controller.processGameInput(GameController.PLAYER_INPUT.LEFT);
+		controller.processGameInput(PLAYER_INPUT.LEFT);
 		assertTrue(controller.getSlider().getX() < 50);
-		controller.processGameInput(GameController.PLAYER_INPUT.RIGHT);
-		controller.processGameInput(GameController.PLAYER_INPUT.RIGHT);
+		controller.processGameInput(PLAYER_INPUT.RIGHT);
+		controller.processGameInput(PLAYER_INPUT.RIGHT);
 		assertTrue(controller.getSlider().getX() > 50);
 
 		// test invalid slider movements
 		controller.getSlider().setX(0);
-		controller.processGameInput(GameController.PLAYER_INPUT.LEFT);
+		controller.processGameInput(PLAYER_INPUT.LEFT);
 		assertTrue(controller.getSlider().getX() == 0);
 
 		int max_x = controller.getGridSize().width - controller.getSlider().getWidth();
 		controller.getSlider().setX(max_x);
-		controller.processGameInput(GameController.PLAYER_INPUT.RIGHT);
+		controller.processGameInput(PLAYER_INPUT.RIGHT);
 		assertTrue(controller.getSlider().getX() <= max_x);
 
 		// test menu input
 		controller.processMenuInput(MENU_ITEM.MNU_NEW_GAME);
 		assertTrue(controller.getState() == GAME_STATE.RUNNING);
 
-		controller.processGameInput(GameController.PLAYER_INPUT.PAUSE);
+		controller.processGameInput(PLAYER_INPUT.PAUSE);
 		assertTrue(controller.getState() == GAME_STATE.PAUSED);
 
 		controller.processMenuInput(MENU_ITEM.MNU_CONTINUE);
@@ -274,7 +274,7 @@ public class TestGameController extends TestCase {
 		
 		// needed to fix EclEmma bug (no full coverage for enums)
 		GAME_STATE.valueOf(GAME_STATE.values()[0].name());
-		GameController.PLAYER_INPUT.valueOf(GameController.PLAYER_INPUT.values()[0].name());
+		PLAYER_INPUT.valueOf(PLAYER_INPUT.values()[0].name());
 	}
 
 	@Test

@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +23,7 @@ import de.luma.breakout.communication.GAME_STATE;
 import de.luma.breakout.communication.IGameObserver;
 import de.luma.breakout.communication.MENU_ITEM;
 import de.luma.breakout.communication.ObservableGame;
+import de.luma.breakout.communication.PLAYER_INPUT;
 import de.luma.breakout.communication.TextMapping;
 import de.luma.breakout.communication.messages.DetachObserverMessage;
 import de.luma.breakout.communication.messages.GameInputMessage;
@@ -459,7 +461,7 @@ public class GameController extends ObservableGame implements IGameController {
 	public void notifyGameMenu(MENU_ITEM[] menuItems, String title) {
 		this.lastShownMenu = new GameMenu(menuItems, title);
 
-		super.notifyGameMenu(menuItems, title);
+		super.notifyGameMenu(Arrays.copyOf(menuItems, menuItems.length), title);
 	}
 
 	/**

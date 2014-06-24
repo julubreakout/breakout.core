@@ -7,6 +7,7 @@ import java.util.List;
 import de.luma.breakout.communication.GAME_STATE;
 import de.luma.breakout.communication.IObservableGame;
 import de.luma.breakout.communication.MENU_ITEM;
+import de.luma.breakout.communication.PLAYER_INPUT;
 import de.luma.breakout.data.menu.GameMenu;
 import de.luma.breakout.data.objects.IBall;
 import de.luma.breakout.data.objects.IBrick;
@@ -17,16 +18,7 @@ import de.luma.breakout.data.objects.IBrick;
  *
  */
 public interface IGameController extends IObservableGame {
-	
-	/**
-	 * Input options while the game is running.
-	 */
-	enum PLAYER_INPUT {
-		LEFT,
-		RIGHT,
-		PAUSE
-	}
-	
+		
 	/* #######################################  USER INPUT HANDLING #######################################   */
 	/* ###############################          menus & key events      ##############################  */
 

@@ -10,9 +10,9 @@ import org.apache.log4j.Logger;
 import de.luma.breakout.communication.GAME_STATE;
 import de.luma.breakout.communication.IGameObserver;
 import de.luma.breakout.communication.MENU_ITEM;
+import de.luma.breakout.communication.PLAYER_INPUT;
 import de.luma.breakout.communication.TextMapping;
 import de.luma.breakout.controller.IGameController;
-import de.luma.breakout.controller.IGameController.PLAYER_INPUT;
 import de.luma.breakout.data.objects.IBall;
 import de.luma.breakout.data.objects.IBrick;
 
