@@ -4,7 +4,7 @@
 	<groupId>julubreakout</groupId>
 	<artifactId>core</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>julubreakout.core</name>
+	<name>SA2014SS-08-Breakout2-Core</name>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
