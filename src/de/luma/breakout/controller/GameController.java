@@ -459,9 +459,9 @@ public class GameController extends ObservableGame implements IGameController {
 	 */
 	@Override
 	public void notifyGameMenu(MENU_ITEM[] menuItems, String title) {
-		this.lastShownMenu = new GameMenu(menuItems, title);
+		this.lastShownMenu = new GameMenu(Arrays.copyOf(menuItems, menuItems.length), title);
 
-		super.notifyGameMenu(Arrays.copyOf(menuItems, menuItems.length), title);
+		super.notifyGameMenu(menuItems, title);
 	}
 
 	/**
