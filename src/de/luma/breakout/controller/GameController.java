@@ -49,30 +49,30 @@ public class GameController extends ObservableGame implements IGameController {
 
 
 	public static class GameControllerActor extends UntypedActor implements IGameObserver {
-		
+
 		private GameController controller;
 		private List<ActorRef> observers;
 
 		public GameControllerActor(String appPath) {
-			
+
 			observers = new LinkedList<ActorRef>();
 			controller = new GameController(appPath);
 			controller.addObserver(this);
 		}
-		
+
 		@Override
 		public void onReceive(Object msg) throws Exception {
 			if (getSender().equals(getSelf())) {
 				return;
 			}
-			
+
 			if (msg instanceof AddObserverMessage) {
 				synchronized (observers) {
 					observers.add(getSender());
 				}
-				
+
 				controller.initialize();
-				
+
 			} else if (msg instanceof DetachObserverMessage) {
 				synchronized (observers) {
 					observers.remove(getSender());
@@ -81,19 +81,19 @@ public class GameController extends ObservableGame implements IGameController {
 			} else if (msg instanceof GameInputMessage) {
 				GameInputMessage inputMsg = (GameInputMessage)msg;
 				controller.processGameInput(inputMsg.getInput());
-				
+
 			} else if (msg instanceof MenuInputMessage) {
 				MenuInputMessage menuMsg = (MenuInputMessage)msg;
 				controller.processMenuInput(menuMsg.getIndexOfMenuItem());
-				
+
 			} else if (msg instanceof LoadLevelMessage) {
 				LoadLevelMessage levelMsg = (LoadLevelMessage)msg;
 				controller.loadLevel(new File(levelMsg.getFilePath()));
-				
+
 			}
-			
+
 		}
-		
+
 		private void notifyObservers(IActorMessage message) {
 			synchronized (observers) {
 				for (ActorRef parentActor : observers) {
@@ -115,17 +115,21 @@ public class GameController extends ObservableGame implements IGameController {
 		@Override
 		public void updateGameFrame() {
 			notifyObservers(new UpdateGameFrameMessage(
-							controller.getState(), controller.getLevelList(), controller.getScore(), 
-							controller.getGridSize(), controller.getBalls(), controller.getBricks(), controller.getSlider()));
+					controller.getState(), controller.getLevelList(), controller.getScore(), 
+					controller.getGridSize(), controller.getBalls(), controller.getBricks(), controller.getSlider()));
 		}
-		
-		@Override
-		public void updateRepaintPlayGrid() { }  // not needed
 
 		@Override
-		public void updateOnResize() { }  // not needed
+		public void updateRepaintPlayGrid() { 
+			// not needed
+		}
+
+		@Override
+		public void updateOnResize() {
+			// not needed
+		}  
 	}
-	
+
 	/**
 	 * This task gets scheduled by start() to make the
 	 * game run with a constant FPS.
@@ -144,8 +148,9 @@ public class GameController extends ObservableGame implements IGameController {
 		public void run() {
 			updateGame();			
 		}		
-	}	
-	private String appPath; // base directory of application 
+	}
+	// base directory of application
+	private String appPath; 
 	private PlayGrid grid;	
 	private Timer timer;
 	private GameTimerTask task;
@@ -179,11 +184,13 @@ public class GameController extends ObservableGame implements IGameController {
 	 */
 	@Override
 	public void initialize() {
-		if (!isInitialized) {   // first observer connected
+		if (!isInitialized) {
+			// first observer is connecting
 			showMainMenu();
 			isInitialized = true;
-			
-		} else {   // only repeat menu message for next clients
+
+		} else {
+			// only repeat menu message for next clients
 			if (getState() != GAME_STATE.RUNNING && lastShownMenu != null) {
 				notifyGameMenu(this.lastShownMenu.getMenuItems(), this.lastShownMenu.getTitle());
 			}
@@ -402,7 +409,7 @@ public class GameController extends ObservableGame implements IGameController {
 		if (menuItem == null) {
 			menuItem = MENU_ITEM.MNU_BACK_MAIN_MENU;
 		}
-		
+
 		switch (menuItem) {
 		case MNU_NEW_GAME:
 			this.setCreativeMode(false);	
@@ -605,7 +612,7 @@ public class GameController extends ObservableGame implements IGameController {
 
 
 	private List<String> cachedLevelList;
-	
+
 	/**
 	 * Get a list of file path of available levels.
 	 *  add a offset if your not working localy
@@ -616,7 +623,7 @@ public class GameController extends ObservableGame implements IGameController {
 		if (cachedLevelList != null) {
 			return cachedLevelList;
 		}
-		
+
 		File f = new File(appPath + LEVEL_PATH);
 		List<String> retVal = new ArrayList<String>();
 
